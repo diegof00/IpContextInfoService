@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CacheConfig {
 
+    public static final int ONE_DAY_IN_SECONDS = 86400;
     private HazelcastInstance hazelcastInstance;
 
     @Bean
@@ -25,12 +26,25 @@ public class CacheConfig {
     private Config hazelCastConfig() {
         Config config = new Config();
         config.setInstanceName("hazelcast-instance");
-        MapConfig mapConfig = new MapConfig("client-cache");
+        config.getMapConfigs().put("ipLocation-cache", ipLocationCacheConfig());
+        config.getMapConfigs().put("currency-cache", currencyCacheConfig());
+        return config;
+    }
+
+    private MapConfig currencyCacheConfig() {
+        MapConfig mapConfig = new MapConfig();
+        mapConfig.setTimeToLiveSeconds(ONE_DAY_IN_SECONDS);
+        mapConfig.setEvictionPolicy(EvictionPolicy.LRU);
+        mapConfig.setMaxSizeConfig(new MaxSizeConfig(100, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE));
+        return mapConfig;
+    }
+
+    private MapConfig ipLocationCacheConfig() {
+        MapConfig mapConfig = new MapConfig();
         mapConfig.setTimeToLiveSeconds(0);
         mapConfig.setEvictionPolicy(EvictionPolicy.NONE);
-        mapConfig.setMaxSizeConfig(new MaxSizeConfig(200, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE));
-        config.addMapConfig(mapConfig);
-        return config;
+        mapConfig.setMaxSizeConfig(new MaxSizeConfig(100, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE));
+        return mapConfig;
     }
 
 }

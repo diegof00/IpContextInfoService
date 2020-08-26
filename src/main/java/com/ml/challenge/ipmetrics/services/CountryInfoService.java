@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class CountryInfoService {
 
-    private CountryInfoApiClient countryInfoApiClient;
+    private final CountryInfoApiClient countryInfoApiClient;
 
     public CountryInfoDTO getCountryInfoByIsoCode(String code) {
         return countryInfoApiClient.getCountryInfoByIsoCode(code);

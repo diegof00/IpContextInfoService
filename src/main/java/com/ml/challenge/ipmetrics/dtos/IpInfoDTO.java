@@ -1,17 +1,15 @@
 package com.ml.challenge.ipmetrics.dtos;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Getter
@@ -24,7 +22,9 @@ public class IpInfoDTO implements Serializable {
     @JsonAlias("IP")
     private String ip;
 
-    private LocalDateTime dateTime;
+    private LocalDate currentDate;
+
+    private List<CountryTimeZone> time;
 
     private String country;
 
@@ -33,8 +33,6 @@ public class IpInfoDTO implements Serializable {
     private List<String> languages;
 
     private String currency;
-
-    private LocalDateTime time;
 
     private String distance;
 

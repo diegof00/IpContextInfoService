@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class IpLocationService {
 
-    private IpLocationApiClient ipLocationApiClient;
+    private final IpLocationApiClient ipLocationApiClient;
 
     @Cacheable(value = {"ipLocation-cache"}, key = "#ip")
     public IpLocationDTO getIpLocation(String ip) {
