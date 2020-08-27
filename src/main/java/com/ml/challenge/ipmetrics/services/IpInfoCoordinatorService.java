@@ -1,10 +1,13 @@
 package com.ml.challenge.ipmetrics.services;
 
 import com.ml.challenge.ipmetrics.clients.country.CountryInfoDTO;
+import com.ml.challenge.ipmetrics.clients.country.CountryInfoService;
 import com.ml.challenge.ipmetrics.clients.country.Currency;
 import com.ml.challenge.ipmetrics.clients.country.Language;
 import com.ml.challenge.ipmetrics.clients.currency.CurrencyInfoDTO;
+import com.ml.challenge.ipmetrics.clients.currency.CurrencyInfoService;
 import com.ml.challenge.ipmetrics.clients.locationip.IpLocationDTO;
+import com.ml.challenge.ipmetrics.clients.locationip.IpLocationService;
 import com.ml.challenge.ipmetrics.dtos.CountryTimeZone;
 import com.ml.challenge.ipmetrics.dtos.IpInfoDTO;
 import lombok.AllArgsConstructor;
@@ -25,28 +28,37 @@ public class IpInfoCoordinatorService {
     private final CurrencyInfoService currencyInfoService;
 
     public IpInfoDTO getExternalResult(String ip) {
-        IpLocationDTO ipLocationDTO = ipLocationService.getIpLocation(ip);
         IpInfoDTO ipInfoDTO = new IpInfoDTO();
         ipInfoDTO.setIp(ip);
-        ipInfoDTO.setCountry(ipLocationDTO.getCountryName());
-        ipInfoDTO.setIsoCode(ipLocationDTO.getCountryCode3());
+        resolveIpLocation(ipInfoDTO);
+        resolveCountryInfo(ipInfoDTO);
+        resolveCurrencyInfo(ipInfoDTO);
+        return ipInfoDTO;
+    }
+
+    private void resolveIpLocation(IpInfoDTO ipInfoDTO) {
+        IpLocationDTO ipLocationDTO = ipLocationService.getIpLocation(ipInfoDTO.getIp());
+            ipInfoDTO.setCountry(ipLocationDTO.getCountryName());
+            ipInfoDTO.setIsoCode(ipLocationDTO.getCountryCode3());
+    }
+
+    private void resolveCountryInfo(IpInfoDTO ipInfoDTO) {
         CountryInfoDTO countryInfoDTO = countryInfoService.getCountryInfoByIsoCode(ipInfoDTO.getIsoCode());
         ipInfoDTO.setLanguages(countryInfoDTO.getLanguages().stream().map(Language::getName).collect(Collectors.toList()));
         ipInfoDTO.setTime(resolveCountryTimeZone(countryInfoDTO.getTimezones()));
         ZonedDateTime date = ipInfoDTO.getTime().stream().findFirst().map(CountryTimeZone::getTime).orElseGet(ZonedDateTime::now);
         ipInfoDTO.setCurrentDate(date.toLocalDate());
-        CurrencyInfoDTO currencyDTO = currencyInfoService.getCurrencyInfo(countryInfoDTO.getCurrencies().get(0).getCode(), "USD");
-        ipInfoDTO.setCurrency(resolveCurrency(countryInfoDTO, currencyDTO));
-        return ipInfoDTO;
+        ipInfoDTO.setCurrency(countryInfoDTO.getCurrencies().stream().findFirst().map(Currency::getCode).orElse(""));
+    }
+
+    private void resolveCurrencyInfo(IpInfoDTO ipInfoDTO) {
+        CurrencyInfoDTO currencyDTO = currencyInfoService.getCurrencyInfo(ipInfoDTO.getCurrency(), "USD");
+        ipInfoDTO.setCurrency(ipInfoDTO.getCurrency() + ". 1 " + ipInfoDTO.getCurrency() + " = "
+                + currencyDTO.getRates().get(ipInfoDTO.getCurrency()) + " " + currencyDTO.getBase());
     }
 
     private List<CountryTimeZone> resolveCountryTimeZone(String[] timeZones) {
         return Stream.of(timeZones).map(utc -> new CountryTimeZone(utc, ZonedDateTime.now(ZoneId.of(utc))))
                 .collect(Collectors.toList());
-    }
-
-    private String resolveCurrency(CountryInfoDTO countryInfoDTO, CurrencyInfoDTO currencyDTO) {
-        String code = countryInfoDTO.getCurrencies().stream().findFirst().map(Currency::getCode).orElse("");
-        return code + ". 1 " + code + " = " + currencyDTO.getRates().get(code) + " " + currencyDTO.getBase();
     }
 }

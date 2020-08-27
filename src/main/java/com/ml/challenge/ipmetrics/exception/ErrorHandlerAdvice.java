@@ -33,9 +33,7 @@ public class ErrorHandlerAdvice {
     private Map<String, String> createBody(Exception exception, int status) {
         Map<String, String> body = new LinkedHashMap<>();
         body.put("status", String.valueOf(status));
-        body.put("message", exception.getMessage()
-                .replaceAll(".*(?=exception)", "")
-                .replaceAll("SQL.*SQL", ""));
+        body.put("message", exception.getMessage());
         body.put("timestamp", LocalDateTime.now().toString());
         body.put("cause", getRootCause(exception));
         if (null != exception.getCause()) {
