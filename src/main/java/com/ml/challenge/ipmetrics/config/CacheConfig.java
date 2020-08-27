@@ -26,9 +26,19 @@ public class CacheConfig {
     private Config hazelCastConfig() {
         Config config = new Config();
         config.setInstanceName("hazelcast-instance");
-        config.getMapConfigs().put("ipLocation-cache", ipLocationCacheConfig());
+        config.getMapConfigs().put("ipLocation-cache", permanentCache());
         config.getMapConfigs().put("currency-cache", currencyCacheConfig());
+        config.getMapConfigs().put("country-cache", defaultCacheConfig());
+        config.getMapConfigs().put("distance-cache", permanentCache());
         return config;
+    }
+
+    private MapConfig defaultCacheConfig() {
+        MapConfig mapConfig = new MapConfig();
+        mapConfig.setTimeToLiveSeconds(180);
+        mapConfig.setEvictionPolicy(EvictionPolicy.NONE);
+        mapConfig.setMaxSizeConfig(new MaxSizeConfig(100, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE));
+        return mapConfig;
     }
 
     private MapConfig currencyCacheConfig() {
@@ -39,7 +49,7 @@ public class CacheConfig {
         return mapConfig;
     }
 
-    private MapConfig ipLocationCacheConfig() {
+    private MapConfig permanentCache() {
         MapConfig mapConfig = new MapConfig();
         mapConfig.setTimeToLiveSeconds(0);
         mapConfig.setEvictionPolicy(EvictionPolicy.NONE);

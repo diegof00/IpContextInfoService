@@ -14,7 +14,7 @@ import java.util.Map;
 public class ErrorHandlerAdvice {
 
 
-    @ExceptionHandler(value = ExampleServiceException.class)
+    @ExceptionHandler(value = IpContextInfoServiceException.class)
     public ResponseEntity<Map<String, String>> ServiceErrorHandler(Exception exception) {
         return new ResponseEntity<>(createBody(exception, HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
     }
@@ -42,8 +42,8 @@ public class ErrorHandlerAdvice {
         return body;
     }
 
-    private String getRootCause(Exception databaseServiceEXception) {
-        return databaseServiceEXception.getCause() != null ? sanitizeMessage(databaseServiceEXception.getCause().getMessage()) : "";
+    private String getRootCause(Exception exception) {
+        return exception.getCause() != null ? sanitizeMessage(exception.getCause().getMessage()) : exception.getClass().getSimpleName();
     }
 
     private String sanitizeMessage(String causeMessage) {
