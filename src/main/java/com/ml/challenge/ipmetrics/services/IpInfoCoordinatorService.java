@@ -34,6 +34,7 @@ public class IpInfoCoordinatorService {
     private final CountryInfoService countryInfoService;
     private final CurrencyInfoService currencyInfoService;
     private final DistanceCalculatorService distanceCalculatorService;
+    private final DataStoreService dataStoreService;
 
     public IpInfoDTO getExternalResult(String ip) {
         log.info("start resolving ip info for {}", ip);
@@ -44,6 +45,7 @@ public class IpInfoCoordinatorService {
         if (!StringUtils.isEmpty(ipInfoDTO.getCurrency())) {
             resolveCurrencyInfo(ipInfoDTO);
         }
+        dataStoreService.saveDto(ipInfoDTO);
         return ipInfoDTO;
     }
 

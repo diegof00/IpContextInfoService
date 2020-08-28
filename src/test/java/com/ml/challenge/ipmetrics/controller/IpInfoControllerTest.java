@@ -24,4 +24,5 @@ public class IpInfoControllerTest {
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
     }
+
 }

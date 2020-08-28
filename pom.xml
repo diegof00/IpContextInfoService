@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.ml.challenge.ipmetrics</groupId>
-    <artifactId>ipmetrics-service</artifactId>
+    <artifactId>ipcontext-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>ipmetrics-service</name>
+    <name>ipcontext-service</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>
@@ -127,7 +127,7 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
+                <version>Finchley.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
