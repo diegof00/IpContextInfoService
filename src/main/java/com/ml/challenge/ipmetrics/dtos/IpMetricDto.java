@@ -1,15 +1,20 @@
 package com.ml.challenge.ipmetrics.dtos;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
 
-@Setter
 @Getter
-public class DistanceDTO implements Serializable {
+@Setter
+@Builder
+public class IpMetricDto implements Serializable {
 
-    private String countryName;
+    private String country;
+
     private Double distance;
+
+    private Long invocations;
 
 }

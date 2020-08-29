@@ -11,6 +11,6 @@ import java.util.Optional;
 public interface CurrencyInfoApiClient {
 
     @GetMapping(value = "/latest", produces = "application/json")
-    Optional<CurrencyInfoDTO> getCurrencyInfo(@RequestParam("symbol") String symbol, @RequestParam("base") String base);
+    Optional<CurrencyInfoDTO> getCurrencyInfo(@RequestParam("symbols") String symbol, @RequestParam("base") String base);
 
 }

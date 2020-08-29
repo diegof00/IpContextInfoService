@@ -12,12 +12,13 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -36,6 +37,7 @@ public class IpInfoCoordinatorServiceTest {
     public static final String AUD_$ = "AUD$";
     public static final String ENGLISH = "English";
     public static final String IP2 = "1.1.1.2";
+    public static final String CONVERTION_TEXT_DONE = ". 1";
     private IpInfoCoordinatorService ipInfoCoordinatorService;
 
     @Mock
@@ -50,7 +52,7 @@ public class IpInfoCoordinatorServiceTest {
     private DistanceCalculatorService distanceCalculatorService;
 
     @Mock
-    private DataStoreService dataStoreService;
+    private DataService dataService;
 
 
     @Before
@@ -61,11 +63,11 @@ public class IpInfoCoordinatorServiceTest {
         CountryInfoDTO countryInfoDto = getCountryInfoDto();
         when(countryInfoService.getCountryInfoByIsoCode(AUS)).thenReturn(countryInfoDto);
         CurrencyInfoDTO currencyInfoDto = getCurrencyInfo();
-        when(currencyInfoService.getCurrencyInfo(AUD, USD)).thenReturn(currencyInfoDto);
-        doNothing().when(dataStoreService).saveDto(any(IpInfoDTO.class));
+        when(currencyInfoService.getCurrencyInfo(AUD, USD)).thenReturn(Optional.of(currencyInfoDto));
+        doNothing().when(dataService).saveIpInfo(any(IpInfoDTO.class));
         distanceCalculatorService = new DistanceCalculatorService();
         ipInfoCoordinatorService = new IpInfoCoordinatorService(ipLocationService, countryInfoService,
-                currencyInfoService, distanceCalculatorService, dataStoreService);
+                currencyInfoService, distanceCalculatorService, dataService);
     }
 
     @Test
@@ -76,9 +78,9 @@ public class IpInfoCoordinatorServiceTest {
         assertEquals("AUD. 1 AUD = 0.8 USD", result.getCurrency());
         assertEquals(AUS, result.getIsoCode());
         assertEquals(AUSTRALIA, result.getCountry());
-        assertEquals("9033.799916394963 KM", result.getDistance());
+        assertEquals(Double.valueOf(9033.799916394963D), result.getDistance());
         assertEquals(ENGLISH, result.getLanguages().get(0));
-        assertEquals(LocalDateTime.now().plusHours(8).toLocalDate(), result.getCurrentDate());
+        assertNotNull(result.getCurrentDate());
         assertEquals("UTC+8", result.getTime().get(0).getUtc());
         assertEquals("UTC+9", result.getTime().get(1).getUtc());
     }
@@ -87,7 +89,7 @@ public class IpInfoCoordinatorServiceTest {
     @Test
     public void shouldThrowsException() {
         when(ipLocationService.getIpLocation("1.1.1.2")).thenReturn(new IpLocationDTO());
-        assertThrows(IpContextInfoServiceException.class, ()->{
+        assertThrows(IpContextInfoServiceException.class, () -> {
             ipInfoCoordinatorService.getExternalResult("1.1.1.2");
         });
     }
@@ -105,7 +107,21 @@ public class IpInfoCoordinatorServiceTest {
         assertNull("UNO", result.getCurrency());
     }
 
-
+    @Test
+    public void shouldReturnResultWithoutIncompleteCurrencyInfo() {
+        IpLocationDTO ipLocation = new IpLocationDTO();
+        ipLocation.setCountryCode3("UNO");
+        ipLocation.setCountryName("UNO");
+        when(ipLocationService.getIpLocation(IP2)).thenReturn(ipLocation);
+        CountryInfoDTO countryInfo = getCountryInfoDto();
+        when(countryInfoService.getCountryInfoByIsoCode("UNO")).thenReturn(countryInfo);
+        when(currencyInfoService.getCurrencyInfo(countryInfo.getCurrencies().get(0).getCode(), "USD")).thenReturn(Optional.empty());
+        IpInfoDTO result = ipInfoCoordinatorService.getExternalResult(IP2);
+        assertNotNull(result);
+        assertEquals("UNO", result.getCountry());
+        assertEquals("AUD", result.getCurrency());
+        assertFalse(result.getCurrency().contains(CONVERTION_TEXT_DONE));
+    }
 
     private CountryInfoDTO getCountryInfoDto() {
         CountryInfoDTO countryInfoDTO = new CountryInfoDTO();

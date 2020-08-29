@@ -14,7 +14,7 @@ public class DistanceCalculatorService {
     @Cacheable(value = {"distance-cache"}, key = "#countryName", unless = "#result == null")
     public DistanceDTO getDistanceToBuenosAires(Double latitude, Double longitude, String countryName) {
         DistanceDTO distanceDTO = new DistanceDTO();
-        distanceDTO.setDistance(String.valueOf(SloppyMath.haversinMeters(LAT_BUENOS_AIRES, LON_BUENOS_AIRES, latitude, longitude) / 1000));
+        distanceDTO.setDistance(SloppyMath.haversinMeters(LAT_BUENOS_AIRES, LON_BUENOS_AIRES, latitude, longitude) / 1000);
         distanceDTO.setCountryName(countryName);
         return distanceDTO;
     }

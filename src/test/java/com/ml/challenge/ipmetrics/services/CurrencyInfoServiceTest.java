@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 public class CurrencyInfoServiceTest {
@@ -46,39 +47,37 @@ public class CurrencyInfoServiceTest {
     @Test
     public void shouldReturnCountryInfoByIsoCode() {
         when(currencyInfoApiClient.getCurrencyInfo(GBP, USD)).thenReturn(Optional.of(currencyInfoDTO));
-        CurrencyInfoDTO result = currencyInfoService.getCurrencyInfo(GBP, USD);
-        assertNotNull(result);
-        assertEquals(USD, result.getBase());
-        assertNotNull(result.getRates());
-        assertFalse(result.getRates().entrySet().isEmpty());
-        assertEquals(1.10F, result.getRates().get(GBP), 0F);
-        assertEquals("01/01/2020", result.getDate());
-        assertEquals("01/01/2020", result.getDate());
+        Optional<CurrencyInfoDTO> result = currencyInfoService.getCurrencyInfo(GBP, USD);
+        assertTrue(result.isPresent());
+        assertEquals(USD, result.get().getBase());
+        assertNotNull(result.get().getRates());
+        assertFalse(result.get().getRates().entrySet().isEmpty());
+        assertEquals(1.10F, result.get().getRates().get(GBP), 0F);
+        assertEquals("01/01/2020", result.get().getDate());
+        assertEquals("01/01/2020", result.get().getDate());
     }
 
     @Test
     public void shouldReturnCountryInfoWithUSDBaseWhenBaseIsEmpty() {
         when(currencyInfoApiClient.getCurrencyInfo(GBP, USD)).thenReturn(Optional.of(currencyInfoDTO));
-        CurrencyInfoDTO result = currencyInfoService.getCurrencyInfo(GBP, "");
-        assertNotNull(result);
-        assertEquals(USD, result.getBase());
-        assertNotNull(result.getRates());
+        Optional<CurrencyInfoDTO> result = currencyInfoService.getCurrencyInfo(GBP, "");
+        assertTrue(result.isPresent());
+        assertEquals(USD, result.get().getBase());
+        assertNotNull(result.get().getRates());
     }
 
     @Test
     public void shouldReturnCountryInfoWithUSDBaseWhenBaseIsNull() {
         when(currencyInfoApiClient.getCurrencyInfo(GBP, USD)).thenReturn(Optional.of(currencyInfoDTO));
-        CurrencyInfoDTO result = currencyInfoService.getCurrencyInfo(GBP, null);
-        assertNotNull(result);
-        assertEquals(USD, result.getBase());
-        assertNotNull(result.getRates());
+        Optional<CurrencyInfoDTO> result = currencyInfoService.getCurrencyInfo(GBP, null);
+        assertTrue(result.isPresent());
+        assertEquals(USD, result.get().getBase());
+        assertNotNull(result.get().getRates());
     }
 
     @Test
-    public void shouldThrowsExceptionWhenThereIsNoCountryInfoByIsoCode() {
-        assertThrows(IpContextInfoServiceException.class, () -> {
-            currencyInfoService.getCurrencyInfo(GBP, USD);
-        });
+    public void shouldReturnEmptyOptionalWhenThereIsNoInfoCode() {
+        assertFalse(currencyInfoService.getCurrencyInfo(GBP, USD).isPresent());
     }
 
 }

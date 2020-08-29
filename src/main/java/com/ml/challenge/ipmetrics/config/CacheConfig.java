@@ -30,12 +30,13 @@ public class CacheConfig {
         config.getMapConfigs().put("currency-cache", currencyCacheConfig());
         config.getMapConfigs().put("country-cache", defaultCacheConfig());
         config.getMapConfigs().put("distance-cache", permanentCache());
+        config.getMapConfigs().put("metrics-cache", defaultCacheConfig());
         return config;
     }
 
     private MapConfig defaultCacheConfig() {
         MapConfig mapConfig = new MapConfig();
-        mapConfig.setTimeToLiveSeconds(180);
+        mapConfig.setTimeToLiveSeconds(120);
         mapConfig.setEvictionPolicy(EvictionPolicy.NONE);
         mapConfig.setMaxSizeConfig(new MaxSizeConfig(100, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE));
         return mapConfig;

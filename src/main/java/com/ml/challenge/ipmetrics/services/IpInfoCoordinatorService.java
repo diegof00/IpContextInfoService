@@ -9,6 +9,7 @@ import com.ml.challenge.ipmetrics.clients.locationip.IpLocationDTO;
 import com.ml.challenge.ipmetrics.dtos.CountryTimeZone;
 import com.ml.challenge.ipmetrics.dtos.DistanceDTO;
 import com.ml.challenge.ipmetrics.dtos.IpInfoDTO;
+import com.ml.challenge.ipmetrics.dtos.IpMetricsResult;
 import com.ml.challenge.ipmetrics.exception.IpContextInfoServiceException;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ public class IpInfoCoordinatorService {
     private final CountryInfoService countryInfoService;
     private final CurrencyInfoService currencyInfoService;
     private final DistanceCalculatorService distanceCalculatorService;
-    private final DataStoreService dataStoreService;
+    private final DataService dataService;
 
     public IpInfoDTO getExternalResult(String ip) {
         log.info("start resolving ip info for {}", ip);
@@ -45,7 +46,7 @@ public class IpInfoCoordinatorService {
         if (!StringUtils.isEmpty(ipInfoDTO.getCurrency())) {
             resolveCurrencyInfo(ipInfoDTO);
         }
-        dataStoreService.saveDto(ipInfoDTO);
+        dataService.saveIpInfo(ipInfoDTO);
         return ipInfoDTO;
     }
 
@@ -69,23 +70,28 @@ public class IpInfoCoordinatorService {
             if (countryInfoDTO.getLatlng() != null && Stream.of(countryInfoDTO.getLatlng()).noneMatch(StringUtils::isEmpty)) {
                 DistanceDTO distanceDTO = distanceCalculatorService.getDistanceToBuenosAires
                         (Double.valueOf(countryInfoDTO.getLatlng()[0]), Double.valueOf(countryInfoDTO.getLatlng()[1]), countryInfoDTO.getName());
-                ipInfoDTO.setDistance(distanceDTO.getDistance() + " KM");
+                ipInfoDTO.setDistance(distanceDTO.getDistance());
             }
         }
     }
 
     private void resolveCurrencyInfo(IpInfoDTO ipInfoDTO) {
-        CurrencyInfoDTO currencyInfo = currencyInfoService.getCurrencyInfo(ipInfoDTO.getCurrency(), BASE);
-        ipInfoDTO.setCurrency(ipInfoDTO.getCurrency() + ". 1 " + ipInfoDTO.getCurrency() + " = "
-                + resolveCurrencyRate(ipInfoDTO, currencyInfo) + " " + currencyInfo.getBase());
+       currencyInfoService.getCurrencyInfo(ipInfoDTO.getCurrency(), BASE).ifPresent(currencyInfo -> {
+           ipInfoDTO.setCurrency(ipInfoDTO.getCurrency() + ". 1 " + ipInfoDTO.getCurrency() + " = "
+                   + resolveCurrencyRate(ipInfoDTO, currencyInfo) + " " + currencyInfo.getBase());
+       });
     }
 
     private String resolveCurrencyRate(IpInfoDTO ipInfoDTO, CurrencyInfoDTO currencyInfo) {
-        return currencyInfo.getRates().get(ipInfoDTO.getCurrency()) != null ? String.valueOf(currencyInfo.getRates().get(ipInfoDTO.getCurrency())) : "No Info ";
+        return String.valueOf(currencyInfo.getRates().get(ipInfoDTO.getCurrency()));
     }
 
     private List<CountryTimeZone> resolveCountryTimeZone(String[] timeZones) {
         return Stream.of(timeZones).map(utc -> new CountryTimeZone(utc, ZonedDateTime.now(ZoneId.of(utc))))
                 .collect(Collectors.toList());
+    }
+
+    public IpMetricsResult getMetrics() {
+        return dataService.getMetrics(1L);
     }
 }

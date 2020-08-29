@@ -8,6 +8,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Optional;
+
 import static com.ml.challenge.ipmetrics.services.IpInfoCoordinatorService.NO_INFO_FOR_IP;
 
 @Service
@@ -19,8 +21,7 @@ public class CurrencyInfoService {
     private final CurrencyInfoApiClient currencyInfoApiClient;
 
     @Cacheable(value = {"currency-cache"}, key = "#code", unless = "#result == null")
-    public CurrencyInfoDTO getCurrencyInfo(String code, String base) {
-        return currencyInfoApiClient.getCurrencyInfo(code, StringUtils.isEmpty(base) ? DEFAULT_BASE_CODE : base)
-                .orElseThrow(() -> new IpContextInfoServiceException(String.format(NO_CURRENCY_INFO_FOR_S, code)));
+    public Optional<CurrencyInfoDTO> getCurrencyInfo(String code, String base) {
+        return currencyInfoApiClient.getCurrencyInfo(code, StringUtils.isEmpty(base) ? DEFAULT_BASE_CODE : base);
     }
 }

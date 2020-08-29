@@ -17,7 +17,7 @@ public class DistanceCalculatorServiceTest {
         DistanceDTO result = distanceCalculatorService.getDistanceToBuenosAires(latitude1, longitude1, "USA");
         assertNotNull(result);
         assertEquals("USA", result.getCountryName());
-        assertEquals("7235.251934200906", result.getDistance());
+        assertEquals(Double.valueOf(7235.251934200906D), result.getDistance());
     }
 
 

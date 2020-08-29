@@ -1,6 +1,7 @@
 package com.ml.challenge.ipmetrics.controller;
 
 import com.ml.challenge.ipmetrics.dtos.IpInfoDTO;
+import com.ml.challenge.ipmetrics.dtos.IpMetricsResult;
 import com.ml.challenge.ipmetrics.services.IpInfoCoordinatorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +32,10 @@ public class IpInfoController {
     @GetMapping("/{ip}")
     public @ResponseBody ResponseEntity<IpInfoDTO> getResult(@PathVariable @Valid @Pattern(regexp = IP_PATERN, message = ERROR_MESSAGE) String ip) {
         return ResponseEntity.ok(ipInfoCoordinatorService.getExternalResult(ip));
+    }
+
+    @GetMapping("/metrics")
+    public @ResponseBody ResponseEntity<IpMetricsResult> getMetrics() {
+        return ResponseEntity.ok(ipInfoCoordinatorService.getMetrics());
     }
 }
