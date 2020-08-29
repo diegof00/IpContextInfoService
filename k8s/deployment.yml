@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-example-deployment
+  name: ipcontext-service-deployment
   labels:
-    app: api-example
+    app: ipcontext-service
 spec:
-  replicas: 5
+  replicas: 3
   selector:
     matchLabels:
-      app: api-example
+      app: ipcontext-service
   template:
     metadata:
       labels:
-        app: api-example
+        app: ipcontext-service
     spec:
       containers:
-        - name: api-example
-          image: diegof0/api-example:latest
+        - name: ipcontext-service
+          image: diegof0/ipcontext-service:latest
           ports:
             - containerPort: 8080

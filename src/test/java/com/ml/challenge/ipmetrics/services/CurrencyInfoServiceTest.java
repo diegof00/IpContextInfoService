@@ -52,6 +52,8 @@ public class CurrencyInfoServiceTest {
         assertNotNull(result.getRates());
         assertFalse(result.getRates().entrySet().isEmpty());
         assertEquals(1.10F, result.getRates().get(GBP), 0F);
+        assertEquals("01/01/2020", result.getDate());
+        assertEquals("01/01/2020", result.getDate());
     }
 
     @Test

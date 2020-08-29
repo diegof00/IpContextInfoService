@@ -12,7 +12,7 @@ public class CountryInfoApiClientFallback implements CountryInfoApiClient {
     private static final Logger log = LoggerFactory.getLogger(CountryInfoApiClientFallback.class);
 
     @Override
-    public Optional<CountryInfoDTO > getCountryInfoByIsoCode(String code) {
+    public Optional<CountryInfoDTO> getCountryInfoByIsoCode(String code) {
         log.info("error calling countryInfo service for iso code: {}", code);
         return Optional.empty();
     }

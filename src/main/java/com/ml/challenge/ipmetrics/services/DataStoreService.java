@@ -15,7 +15,7 @@ public class DataStoreService {
     public void saveDto(IpInfoDTO ipInfoDTO) {
         log.info("saving message. . . . ");
         try {
-            Thread.sleep(10000);
+            Thread.sleep(1000);
             log.info("message. . . .saved ");
         } catch (InterruptedException e) {
             e.printStackTrace();
