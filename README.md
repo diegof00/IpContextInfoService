@@ -1,9 +1,22 @@
-#IpContextService
+# IpContextService
 
 ## API INFO
-    {host}:{port}/swagger-ui.html
-    localhost:8080/swagger-ui.html
   
+  **ip info**
+        
+    http://{host}:{port}/api/ip/{ip}
+    curl -X GET "http://localhost:8080/api/ip/1.1.1.1" -H "accept: */*"
+    
+  **Ip Metrics**
+  
+    http://{host}:{port}/api/ip/{ip}
+    curl -X GET "http://localhost:8080/api/ip/metrics" -H "accept: */*"
+    
+  **Api docs**
+  
+    {host}:{port}/swagger-ui.html
+    http://localhost:8080/swagger-ui.html
+    
 ## Build
     mvn clean install
     
@@ -12,7 +25,7 @@
 
 ## Run with maven
 
-###Profiles
+### Profiles
 
   * **SPRING_PROFILES_ACTIVE=default**  
   
