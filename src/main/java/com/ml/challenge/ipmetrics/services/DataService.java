@@ -41,7 +41,7 @@ public class DataService {
         }
     }
 
-    @Cacheable(value = {"metrics-cache"}, key = "#id", unless = "#result == null")
+    @Cacheable(value = {"metrics-cache"}, key = "#id", unless = "#result == null || #result.averageDistance == null")
     public IpMetricsResult getMetrics(Long id) {
         List<IpMetricDto> ipMetricDtoList = ipMetricRepository.findAll().stream().map(metric -> IpMetricDto
                 .builder()
@@ -60,7 +60,7 @@ public class DataService {
         return ipMetricsResult;
     }
 
-    @Scheduled(fixedDelay = 180_000)
+    @Scheduled(fixedDelay = 90_000)
     public void calculateMetrics() {
         log.info("executing scheduled method . . . ");
         List<IpMetric> ipMetric = ipMetricRepository.calculateIpMetric();

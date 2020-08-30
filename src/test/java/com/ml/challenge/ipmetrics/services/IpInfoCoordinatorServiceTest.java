@@ -6,14 +6,19 @@ import com.ml.challenge.ipmetrics.clients.country.Language;
 import com.ml.challenge.ipmetrics.clients.currency.CurrencyInfoDTO;
 import com.ml.challenge.ipmetrics.clients.locationip.IpLocationDTO;
 import com.ml.challenge.ipmetrics.dtos.IpInfoDTO;
+import com.ml.challenge.ipmetrics.dtos.IpMetricDto;
+import com.ml.challenge.ipmetrics.dtos.IpMetricsResult;
 import com.ml.challenge.ipmetrics.exception.IpContextInfoServiceException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -22,7 +27,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -108,6 +115,22 @@ public class IpInfoCoordinatorServiceTest {
     }
 
     @Test
+    public void shouldReturnResultWithoutDistanceInfo() {
+        IpLocationDTO ipLocation = new IpLocationDTO();
+        ipLocation.setCountryCode3("UNO");
+        ipLocation.setCountryName("UNO");
+        when(ipLocationService.getIpLocation(IP2)).thenReturn(ipLocation);
+        CountryInfoDTO countryInfoDTO = getCountryInfoDto();
+        countryInfoDTO.setLatlng(null);
+        when(countryInfoService.getCountryInfoByIsoCode("UNO")).thenReturn(countryInfoDTO);
+        IpInfoDTO result = ipInfoCoordinatorService.getExternalResult(IP2);
+        assertNotNull(result);
+        assertEquals("UNO", result.getCountry());
+        assertNotNull(result.getCurrency());
+        assertNull(result.getDistance());
+    }
+
+    @Test
     public void shouldReturnResultWithoutIncompleteCurrencyInfo() {
         IpLocationDTO ipLocation = new IpLocationDTO();
         ipLocation.setCountryCode3("UNO");
@@ -121,6 +144,28 @@ public class IpInfoCoordinatorServiceTest {
         assertEquals("UNO", result.getCountry());
         assertEquals("AUD", result.getCurrency());
         assertFalse(result.getCurrency().contains(CONVERTION_TEXT_DONE));
+    }
+
+    @Test
+    public void getMetrics() {
+        when(dataService.getMetrics(anyLong())).thenReturn(getIpMetricsResult());
+        IpMetricsResult ipMetricsResult = ipInfoCoordinatorService.getMetrics();
+        assertEquals(ipMetricsResult.getAverageDistance(), "12473.500862275616");
+        assertEquals(3, ipMetricsResult.getIpMetricDtoList().size());
+        assertEquals(1L, (long) ipMetricsResult.getId());
+        assertNotNull(ipMetricsResult.getIpMetricDtoList().get(0).toString());
+    }
+
+    @Test
+    public void getEmptyMetrics() {
+        IpMetricsResult ipMetricsResultMock = new IpMetricsResult();
+        ipMetricsResultMock.setId(1L);
+        ipMetricsResultMock.setIpMetricDtoList(new ArrayList<>());
+        when(dataService.getMetrics(anyLong())).thenReturn(ipMetricsResultMock);
+        IpMetricsResult ipMetricsResult = ipInfoCoordinatorService.getMetrics();
+        assertNull(ipMetricsResult.getAverageDistance());
+        assertTrue(ipMetricsResult.getIpMetricDtoList().isEmpty());
+        assertEquals(1L, (long) ipMetricsResult.getId());
     }
 
     private CountryInfoDTO getCountryInfoDto() {
@@ -159,4 +204,27 @@ public class IpInfoCoordinatorServiceTest {
         return currencyInfoDTO;
     }
 
+    private IpMetricsResult getIpMetricsResult(){
+        IpMetricsResult ipMetricsResult = new IpMetricsResult();
+        ipMetricsResult.setIpMetricDtoList(getIpMetrics());
+        ipMetricsResult.setAverageDistance("12473.500862275616");
+        ipMetricsResult.setId(1L);
+        return ipMetricsResult;
+
+    }
+
+    private List<IpMetricDto> getIpMetrics(){
+        return Arrays.asList(IpMetricDto.builder()
+                        .country("COLOMBIA")
+                        .distance(23500.20)
+                        .invocations(20L).build(),
+                IpMetricDto.builder()
+                        .country("Australia")
+                        .distance(13061.08525474750)
+                        .invocations(5L).build(),
+                IpMetricDto.builder()
+                        .country("Brazil")
+                        .distance(2757.3310919779183)
+                        .invocations(23L).build());
+    }
 }

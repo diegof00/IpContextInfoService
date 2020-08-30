@@ -17,8 +17,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -62,24 +64,53 @@ public class IpInfoCoordinatorService {
     private void resolveCountryInfo(IpInfoDTO ipInfoDTO) {
         CountryInfoDTO countryInfoDTO = countryInfoService.getCountryInfoByIsoCode(ipInfoDTO.getIsoCode());
         if (!StringUtils.isEmpty(countryInfoDTO.getName())) {
-            ipInfoDTO.setLanguages(countryInfoDTO.getLanguages().stream().map(Language::getName).collect(Collectors.toList()));
+            ipInfoDTO.setLanguages(resolveLanguages(countryInfoDTO));
             ipInfoDTO.setTime(resolveCountryTimeZone(countryInfoDTO.getTimezones()));
-            ZonedDateTime date = ipInfoDTO.getTime().stream().findFirst().map(CountryTimeZone::getTime).orElseGet(ZonedDateTime::now);
-            ipInfoDTO.setCurrentDate(date.toLocalDate());
-            ipInfoDTO.setCurrency(countryInfoDTO.getCurrencies().stream().findFirst().map(Currency::getCode).orElse(""));
-            if (countryInfoDTO.getLatlng() != null && Stream.of(countryInfoDTO.getLatlng()).noneMatch(StringUtils::isEmpty)) {
-                DistanceDTO distanceDTO = distanceCalculatorService.getDistanceToBuenosAires
-                        (Double.valueOf(countryInfoDTO.getLatlng()[0]), Double.valueOf(countryInfoDTO.getLatlng()[1]), countryInfoDTO.getName());
+            ipInfoDTO.setCurrentDate(resolveDate(ipInfoDTO));
+            ipInfoDTO.setCurrency(getCurrencyCode(countryInfoDTO));
+            if (isLatLngValid(countryInfoDTO)) {
+                DistanceDTO distanceDTO = getDistanceToBuenosAires(countryInfoDTO);
                 ipInfoDTO.setDistance(distanceDTO.getDistance());
             }
         }
     }
 
+    private DistanceDTO getDistanceToBuenosAires(CountryInfoDTO countryInfoDTO) {
+        return distanceCalculatorService.getDistanceToBuenosAires(Double.valueOf(countryInfoDTO.getLatlng()[0]),
+                Double.valueOf(countryInfoDTO.getLatlng()[1]),
+                countryInfoDTO.getName());
+    }
+
+    private boolean isLatLngValid(CountryInfoDTO countryInfoDTO) {
+        return countryInfoDTO.getLatlng() != null && Stream.of(countryInfoDTO.getLatlng()).noneMatch(StringUtils::isEmpty);
+    }
+
+    private String getCurrencyCode(CountryInfoDTO countryInfoDTO) {
+        if (countryInfoDTO.getCurrencies() != null) {
+            return countryInfoDTO.getCurrencies().stream().findFirst().map(Currency::getCode).orElse("");
+        }
+        return "";
+    }
+
+    private LocalDate resolveDate(IpInfoDTO ipInfoDTO) {
+        if (ipInfoDTO.getTime() != null) {
+            return ipInfoDTO.getTime().stream().findFirst().map(CountryTimeZone::getTime).orElseGet(ZonedDateTime::now).toLocalDate();
+        }
+        return LocalDate.now();
+    }
+
+    private List<String> resolveLanguages(CountryInfoDTO countryInfoDTO) {
+        if (countryInfoDTO.getLanguages() != null) {
+            return countryInfoDTO.getLanguages().stream().map(Language::getName).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
     private void resolveCurrencyInfo(IpInfoDTO ipInfoDTO) {
-       currencyInfoService.getCurrencyInfo(ipInfoDTO.getCurrency(), BASE).ifPresent(currencyInfo -> {
-           ipInfoDTO.setCurrency(ipInfoDTO.getCurrency() + ". 1 " + ipInfoDTO.getCurrency() + " = "
-                   + resolveCurrencyRate(ipInfoDTO, currencyInfo) + " " + currencyInfo.getBase());
-       });
+        currencyInfoService.getCurrencyInfo(ipInfoDTO.getCurrency(), BASE).ifPresent(currencyInfo -> {
+            ipInfoDTO.setCurrency(ipInfoDTO.getCurrency() + ". 1 " + ipInfoDTO.getCurrency() + " = "
+                    + resolveCurrencyRate(ipInfoDTO, currencyInfo) + " " + currencyInfo.getBase());
+        });
     }
 
     private String resolveCurrencyRate(IpInfoDTO ipInfoDTO, CurrencyInfoDTO currencyInfo) {

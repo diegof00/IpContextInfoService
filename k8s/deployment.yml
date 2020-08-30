@@ -19,3 +19,14 @@ spec:
           image: diegof0/ipcontext-service:latest
           ports:
             - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "dev"
+            - name: DB_HOST
+              value: 192.168.50.184
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: postgres
+            - name: DB_PASSWORD
+              value: root

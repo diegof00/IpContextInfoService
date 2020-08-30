@@ -36,7 +36,7 @@ public class CacheConfig {
 
     private MapConfig defaultCacheConfig() {
         MapConfig mapConfig = new MapConfig();
-        mapConfig.setTimeToLiveSeconds(120);
+        mapConfig.setTimeToLiveSeconds(90);
         mapConfig.setEvictionPolicy(EvictionPolicy.NONE);
         mapConfig.setMaxSizeConfig(new MaxSizeConfig(100, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE));
         return mapConfig;
