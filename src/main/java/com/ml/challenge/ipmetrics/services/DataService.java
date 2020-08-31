@@ -60,7 +60,7 @@ public class DataService {
         return ipMetricsResult;
     }
 
-    @Scheduled(fixedDelay = 90_000)
+    @Scheduled(fixedDelay = 60_000)
     public void calculateMetrics() {
         log.info("executing scheduled method . . . ");
         List<IpMetric> ipMetric = ipMetricRepository.calculateIpMetric();
